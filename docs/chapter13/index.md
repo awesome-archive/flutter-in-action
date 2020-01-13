@@ -1,7 +1,7 @@
-# 本章目录
 
-* [自定义Widget方法简介](intro.md)
-* [通过组合现有Widget实现](combine.md)
-* [实例：TurnBox](turn_box.md)
-* [CustomPaint与Canvas](custom_paint.md) 
-* [实例：圆形渐变进度条](gradient_circular_progress_demo.md) 
+## 本章目录
+
+* [13.1：让App支持多语言](multi_languages_support.md)
+* [13.2：实现Localizations](locallization_implement.md) 
+* [13.3：使用Intl包](intl.md) 
+* [13.4：国际化常见问题](faq.md) 

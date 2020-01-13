@@ -1,16 +1,18 @@
-# Dart线程模型及异常捕获
+# 2.6 Flutter异常捕获
 
-## Dart单线程模型
+在介绍Flutter异常捕获之前必须先了解一下Dart单线程模型，只有了解了Dart的代码执行流程，我们才能知道该在什么地方去捕获异常。
 
-在Java和OC中，如果程序发生异常且没有被捕获，那么程序将会终止，但在Dart或JavaScript中则不会，究其原因，这和它们的运行机制有关系，Java和OC都是多线程模型的编程语言，任意一个线程触发异常且没被捕获时，整个进程就退出了。但Dart和JavaScript不同，它们都是单线程模型，运行机制很相似(但有区别)，下面我们通过Dart官方提供的一张图来看看dart大致运行原理：
+## 2.6.1 Dart单线程模型
+
+在Java和Objective-C（以下简称“OC”）中，如果程序发生异常且没有被捕获，那么程序将会终止，但是这在Dart或JavaScript中则不会！究其原因，这和它们的运行机制有关系。Java和OC都是多线程模型的编程语言，任意一个线程触发异常且该异常未被捕获时，就会导致整个进程退出。但Dart和JavaScript不会，它们都是单线程模型，运行机制很相似(但有区别)，下面我们通过Dart官方提供的一张图来看看Dart大致运行原理：
 
 
 
-![both-queues](../imgs/both-queues.png)
+![图2-12](../imgs/2-12.png)
 
 Dart 在单线程中是以消息循环机制来运行的，其中包含两个任务队列，一个是“微任务队列”  **microtask queue**，另一个叫做“事件队列” **event queue**。从图中可以发现，微任务队列的执行优先级高于事件队列。
 
-现在我们来介绍一下Dart线程运行过程，如上图中所示，入口函数 main() 执行完后，消息循环机制便启动了。首先会按照先进先出的顺序逐个执行微任务队列中的任务，当所有微任务队列执行完后便开始执行事件队列中的任务，事件任务执行完毕后再去执行微任务，如此循环往复，生生不息。
+现在我们来介绍一下Dart线程运行过程，如上图中所示，入口函数 main() 执行完后，消息循环机制便启动了。首先会按照先进先出的顺序逐个执行微任务队列中的任务，事件任务执行完毕后程序便会退出，但是，在事件任务执行的过程中也可以插入新的微任务和事件任务，在这种情况下，整个线程的执行过程便是一直在循环，不会退出，而Flutter中，主线程的执行过程正是如此，永不终止。
 
 在Dart中，所有的外部事件任务都在事件队列中，如IO、计时器、点击、以及绘制事件等，而微任务通常来源于Dart内部，并且微任务非常少，之所以如此，是因为微任务队列优先级高，如果微任务太多，执行时间总和就越久，事件队列任务的延迟也就越久，对于GUI应用来说最直观的表现就是比较卡，所以必须得保证微任务队列不会太长。值得注意的是，我们可以通过`Future.microtask(…)`方法向微任务队列插入一个任务。
 
@@ -18,13 +20,13 @@ Dart 在单线程中是以消息循环机制来运行的，其中包含两个任
 
 
 
-## Flutter异常捕获
+## 2.6.2 Flutter异常捕获
 
-Dart中可以通过`try/catch/finally`来捕获代码块异常，这个和其它变成语言类似，，如果读者不清楚，可以查看Dart语言文档，不在赘述，下面我们看看Flutter中的异常捕获。
+Dart中可以通过`try/catch/finally`来捕获代码块异常，这个和其它编程语言类似，如果读者不清楚，可以查看Dart语言文档，不再赘述，下面我们看看Flutter中的异常捕获。
 
 ### Flutter框架异常捕获
 
-Flutter 框架为我们在很多关键的方法进行了异常捕获。这里举一个例子，当我们布局发生越界或不和规范时，Flutter就会自动弹出一个错误界面，这是因为Flutter已经在执行build方法时添加了异常捕获，最终的源码如下：
+Flutter 框架为我们在很多关键的方法进行了异常捕获。这里举一个例子，当我们布局发生越界或不合规范时，Flutter就会自动弹出一个错误界面，这是因为Flutter已经在执行build方法时添加了异常捕获，最终的源码如下：
 
 ```dart
 @override
@@ -110,11 +112,11 @@ R runZoned<R>(R body(), {
 }) 
 ```
 
-- zoneValues: Zone 的私有数据，可以通过实例`zone[key]`获取，可以理解为每个“沙箱”的私有数据。
+- `zoneValues`: Zone 的私有数据，可以通过实例`zone[key]`获取，可以理解为每个“沙箱”的私有数据。
 
-- zoneSpecification：Zone的一些配置，可以自定义一些代码行为，比如拦截日志输出行为等，举个例子：
+- `zoneSpecification`：Zone的一些配置，可以自定义一些代码行为，比如拦截日志输出行为等，举个例子：
 
-  下面面是拦截应用中所有调用`print`输出日志的行为。
+  下面是拦截应用中所有调用`print`输出日志的行为。
 
   ```dart
   main() {
@@ -128,7 +130,7 @@ R runZoned<R>(R body(), {
 
   这样一来，我们APP中所有调用`print`方法输出日志的行为都会被拦截，通过这种方式，我们也可以在应用中记录日志，等到应用触发未捕获的异常时，将异常信息和日志统一上报。ZoneSpecification还可以自定义一些其他行为，读者可以查看API文档。
 
-- onError：Zone中未捕获异常处理回调，如果开发者提供了onError回调或者通过`ZoneSpecification.handleUncaughtError`指定了错误处理回调，那么这个zone将会变成一个error-zone，该error-zone中发生未捕获异常(无论同步还是异步)时都会调用开发者提供的回调，如：
+- `onError`：Zone中未捕获异常处理回调，如果开发者提供了onError回调或者通过`ZoneSpecification.handleUncaughtError`指定了错误处理回调，那么这个zone将会变成一个error-zone，该error-zone中发生未捕获异常(无论同步还是异步)时都会调用开发者提供的回调，如：
 
   ```dart
   runZoned(() {
@@ -153,7 +155,7 @@ R runZoned<R>(R body(), {
   ```
 
 ### 总结
-我们最终的异常捕获和上报代码如下：
+我们最终的异常捕获和上报代码大致如下：
 
 ```dart
 void collectLog(String line){
@@ -175,7 +177,7 @@ void main() {
     () => runApp(MyApp()),
     zoneSpecification: ZoneSpecification(
       print: (Zone self, ZoneDelegate parent, Zone zone, String line) {
-        collectLog(line); //手机日志
+        collectLog(line); // 收集日志
       },
     ),
     onError: (Object obj, StackTrace stack) {

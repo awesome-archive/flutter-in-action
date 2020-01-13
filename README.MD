@@ -1,6 +1,13 @@
 # 简介
 
-本项目为Flutter中文网《Flutter实战》开源电子书项目，官网地址为：https://book.flutterchina.club .
+本项目为Flutter中文网《Flutter实战》开源电子书项目，官网地址为：https://book.flutterchina.club 。
+
+本书随书源码：https://github.com/wendux/flutter_in_action_source_code
+
+🔥🔥🔥 **本书实体书正在出版中，先需要收集一些读者评价，刊印在本书封底，现诚邀读者为本书写书评。**书评提交地址：https://github.com/flutterchina/flutter-in-action/issues/248。
+
+
+
 
 ## 贡献须知
 
@@ -38,7 +45,7 @@
 2. 安装gitbook。
 
    ```shell
-   npm i -g gitbook gitbook-cli
+   npm i -g gitbook-cli
    ```
 
 3. 本地进入到本项目根目录，运行：
@@ -73,5 +80,5 @@
 
 知识是应该付费的，创作不易，开源不等于免费，如果您是本书读者并手头宽裕，可以微信扫描下面二维码打赏，也不用太多，够买一杯咖啡就行。当然，如果您囊中羞涩，您也可以阅读本书，但我对您有个小小的要求，希望您在阅读的过程中能积极参与到本书的纠错以及未完成内容的创作上来，也算是有所付出。
 
-![](https://cdn.jsdelivr.net/gh/flutterchina/website@1.0/images/pay.jpg)
+![](https://cdn.jsdelivr.net/gh/flutterchina/flutter-in-action@1.0.3/docs/imgs/pay.jpeg)
 
